@@ -50,7 +50,6 @@ class FileRead(object):
             logging.error(e)
 
     async def get_detail_file_content(self, file_name):
-        my_content = None
         try:
             async with aiofiles.open(file_name, mode='r') as f:
                 file_size = os.path.getsize('%s' % file_name)
@@ -60,6 +59,7 @@ class FileRead(object):
                 content = json.loads(_content)
                 detail_content = {
                     "msg_uuid": content.get("msg_uuid"),
+                    "mem_id": content.get("mem_id"),
                     "start_time": content.get("stime"),
                     "end_time": content.get("end_time")
                 }
