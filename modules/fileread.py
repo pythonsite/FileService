@@ -31,36 +31,45 @@ class FileRead(object):
                     loop=self.loop).cancel()
                 current_task.cancel()
             if first_detail_name:
-                pass
-
+                self.flag2, self.first_detail_content = await self.get_detail_file_content(first_detail_name)
+                if not self.flag2:
+                    self.first_detail_content = {}
             else:
-                pass
+                self.first_detail_content = {}
 
             if second_detail_name:
-                pass
+                self.flag3, self.second_detail_content = await self.get_detail_file_content(second_detail_name)
+                if self.flag3:
+                    self.second_detail_content = {}
             else:
-                pass
+                self.second_detail_content = {}
 
         except CancelledError as e:
             logging.info("cancel task success")
         except Exception as e:
             logging.error(e)
 
-    async def get_detail_file_content(self, file_name, tag):
-        if tag == "first":
-            pass
-        elif  tag == "second":
-            pass
-
+    async def get_detail_file_content(self, file_name):
         my_content = None
-        async with aiofiles.open(file_name, mode='r') as f:
-            file_size = os.path.getsize('%s' % file_name)
-            if not file_size:
-                return False
-            content = await f.read()
+        try:
+            async with aiofiles.open(file_name, mode='r') as f:
+                file_size = os.path.getsize('%s' % file_name)
+                if not file_size:
+                    return False
+                _content = await f.read()
+                content = json.loads(_content)
+                detail_content = {
+                    "msg_uuid": content.get("msg_uuid"),
+                    "start_time": content.get("stime"),
+                    "end_time": content.get("end_time")
+                }
+                return True, detail_content
+        except Exception as e:
+            await self.remove_file(file_name, "detail")
+            return False, None
 
-
-
+    async def push_and_db(self):
+        pass
 
     async def get_master_file_content(self, file_name):
         try:
