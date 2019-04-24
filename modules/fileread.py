@@ -11,13 +11,15 @@ import datetime
 from aiofiles import os as aio_os
 
 from config.settings import detail_file_path
+from config.settings import push_url
 
 
 class FileRead(object):
 
-    def __init__(self, loop, db):
+    def __init__(self, loop, db, push_url):
         self.loop = loop
-        self.db = db
+        self.push_url = push_url
+        self.url = url
         self.first_name = None
         self.second_name = None
 
@@ -58,6 +60,7 @@ class FileRead(object):
                 _content = await f.read()
                 content = json.loads(_content)
                 detail_content = {
+                    "file_name": file_name,
                     "msg_uuid": content.get("msg_uuid"),
                     "mem_id": content.get("mem_id"),
                     "start_time": content.get("stime"),
@@ -68,8 +71,29 @@ class FileRead(object):
             await self.remove_file(file_name, "detail")
             return False, None
 
-    async def push_and_db(self):
-        pass
+    async def push_and_db(self, data, flag):
+        try:
+            if data:
+               async with aiohttp.ClientSession() as session:
+                   async with session.post(self.push_url, data=data) as resp:
+                        text = await resp.json()
+                        if text.get('code') != 200:
+                            return False
+                        return True
+
+        except asyncio.TimeoutError:
+            exc = traceback.format_exc()
+            logging.error(exc)
+        except Exception as e:
+            exc = traceback.format_exc()
+            logging.error(exc)
+
+    async def insert_db(self):
+        if flag == 'first'or flag == 'second':
+            pass
+        elif flag == "master":
+            pass
+        return True
 
     async def get_master_file_content(self, file_name):
         try:
@@ -89,6 +113,7 @@ class FileRead(object):
                         "/" + master_data["secondid"] + ".json"
 
                 self.master_content = {
+                    "file_name": file_name,
                     "msg_uuid": master_data.get("msg_uuid"),
                     "server": master_data.get("server"),
                     "client": master_data.get("client"),
