@@ -47,10 +47,27 @@ class FileRead(object):
             else:
                 self.second_detail_content = {}
 
+            await self.push_and_db((self.master_content, self.first_detail_content, self.second_detail_content))
+
         except CancelledError as e:
             logging.info("cancel task success")
         except Exception as e:
             logging.error(e)
+
+    async def func_call(self, data, tag, file_name):
+        if data:
+            msg_uuid = data.get("msg_uuid")
+            insert_db_ret = await self.insert_db(data, tag)
+            push_ret = await self.push_data(data,  tag)
+            if push_ret and insert_db_ret:
+                logging.info("msg_uuid [%s] flag [%s] file name [%s] insert db and push to url success" % (
+                    msg_uuid, tag, file_name))
+            else:
+                logging.error(
+                    "msg_uuid [%s] flag [%s] file name [%s] insert db or push data error" % (msg_uuid, tag, file_name))
+            await self.remove_file(file_name, tag)
+        else:
+            logging.error("flag [%s] content is None" % tag)
 
     async def get_detail_file_content(self, file_name):
         try:
@@ -72,22 +89,30 @@ class FileRead(object):
             await self.remove_file(file_name, "detail")
             return False, None
 
-    async def push_and_db(self, data, flag):
-        try:
-            if data:
-               async with aiohttp.ClientSession() as session:
-                   async with session.post(self.push_url, data=data) as resp:
-                        text = await resp.json()
-                        if text.get('code') != 200:
-                            return False
-                        return True
-
-        except asyncio.TimeoutError:
-            exc = traceback.format_exc()
-            logging.error(exc)
-        except Exception as e:
-            exc = traceback.format_exc()
-            logging.error(exc)
+    async def push_and_db(self, data):
+        msg_uuid = data[0].get("msg_uuid", None)
+        master_name = data[0].get("file_name", None)
+        first_detail_name = None
+        second_detail_name = None
+        if data[1]:
+            first_detail_name = data[1].get('file_name', None)
+        if data[2]:
+            second_detail_name = data[2].get("file_name", None)
+        
+        self.master_data = data[0]
+        del self.master_data['file_name']
+        self.first_data = data[1]
+        if first_detail_name:
+                del self.first_data['filename']
+        self.second_data = data[2]
+        if second_detail_name:
+            del self.second_data['filename']
+        if not self.master_data:
+            logging.error("master file get data None")
+        else:
+            await self.func_call(self.master_data, "master", master_name)
+            await self.func_call(self.first_data, "first", first_detail_name)
+            await self.func_call(self.second_data, "second", second_detail_name)
 
     async def insert_db(self, args, flag):
         sql_args = None
@@ -97,9 +122,10 @@ class FileRead(object):
             sql = "insert into FileService.detail (msg_uuid, memid, stime, etime) values (%s,%s,%s,%s)"
         elif flag == "master":
             sql_args = [args.get("msg_uuid"), args.get(
-                 "server"), args.get("client"), args.get("msg_data")]
+                "server"), args.get("client"), args.get("msg_data")]
             sql = "insert into FileService.master (msg_uuid, server, client, etmsg_dataime) values (%s,%s,%s,%s)"
-        logging.info("msg_uuid [%s] start insert into [%s] sql is [%s] sql_args [%s]", args.get("msg_uuid"), flag, sql, sql_args)
+        logging.info("msg_uuid [%s] start insert into [%s] sql is [%s] sql_args [%s]", args.get(
+            "msg_uuid"), flag, sql, sql_args)
         ret = await self.db.insert(sql, sql_args)
         if not ret:
             logging.error("msg_uuid [%s] insert db [%s] fail" % (
@@ -110,7 +136,8 @@ class FileRead(object):
 
     async def push_data(self, data, flag):
         msg_uuid = data.get("msg_uuid", None)
-        logging.info("msg_uuid [%s] flag [%s] start push to server [%s]" %(msg_uuid, flag, self.push_url))
+        logging.info("msg_uuid [%s] flag [%s] start push to server [%s]" % (
+            msg_uuid, flag, self.push_url))
         start_time = time.time()
         try:
             async with aiohttp.ClientSession() as session:
@@ -118,20 +145,21 @@ class FileRead(object):
                     text = await resp.json()
                     end_time = time.time()
                     logging.info(
-                        "msg_uuid [%s] flag [%s] push data to url [%s] response data [%s]" % (msg_uuid, flag, self.push_url, text))
+                        "msg_uuid [%s] flag [%s] push data to url [%s] response data [%s] end_time - start_time [%s]" % (msg_uuid, flag, self.push_url, text, end_time-start_time))
                     if text.get("code") != 200:
-                        logging.error("msg_uuid [%s] push  data to url [%s] response error" %(msg_uuid, self.push_url))
+                        logging.error("msg_uuid [%s] push  data to url [%s] response error" % (
+                            msg_uuid, self.push_url))
                         return False
                     return True
         except asyncio.TimeoutError:
             exc = traceback.format_exc()
-            logging.error("msg_uuid [%s] push data to url [%s] timeout" %(msg_uuid, self.push_url))
+            logging.error("msg_uuid [%s] push data to url [%s] timeout" % (
+                msg_uuid, self.push_url))
             return False
         except Exception as e:
             exc = traceback.format_exc()
             logging.info(exc)
             return False
-
 
     async def get_master_file_content(self, file_name):
         try:
