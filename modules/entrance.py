@@ -7,7 +7,7 @@ import threading
 
 
 from database.database import DataBase
-from conf
+from config.settings import db_config
 
 
 class HandlerCenter(object):
@@ -31,8 +31,8 @@ class HandlerCenter(object):
         pass
 
     async def app_factory(self):
-        pool = await aiomysql.create_pool(host=CDR_DB_CONFIG["host"], port=int(CDR_DB_CONFIG["port"]), user=CDR_DB_CONFIG["user"], password=CDR_DB_CONFIG["password"], db=CDR_DB_CONFIG["db"], minsize=int(CDR_DB_CONFIG["minsize"]), maxsize=int(CDR_DB_CONFIG["maxsize"]), loop=self.loop, autocommit=True, pool_recycle=1)
-        self.db = Database(pool)
+        pool = await aiomysql.create_pool(host=db_config["host"], port=int(db_config["port"]), user=db_config["user"], password=db_config["password"], db=db_config["db"], minsize=int(db_config["minsize"]), maxsize=int(db_config["maxsize"]), loop=self.loop, autocommit=True, pool_recycle=1)
+        self.db = DataBase(pool)
 
     def start_coroutine(self):
         self.loop = asyncio.new_event_loop()
