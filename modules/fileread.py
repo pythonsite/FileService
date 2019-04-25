@@ -5,6 +5,7 @@ import asyncio
 import json
 import aiofiles
 from asyncio import CancelledError
+from asyncio import TimeoutError
 import aiohttp
 import time
 import datetime
@@ -18,8 +19,8 @@ class FileRead(object):
 
     def __init__(self, loop, db, push_url):
         self.loop = loop
+        self.db = db
         self.push_url = push_url
-        self.url = url
         self.first_name = None
         self.second_name = None
 
@@ -88,12 +89,49 @@ class FileRead(object):
             exc = traceback.format_exc()
             logging.error(exc)
 
-    async def insert_db(self):
+    async def insert_db(self, args, flag):
+        sql_args = None
         if flag == 'first'or flag == 'second':
-            pass
+            sql_args = [args.get("msg_uuid"), args.get(
+                "mem_id"), args.get("start_time"), args.get("end_time")]
+            sql = "insert into FileService.detail (msg_uuid, memid, stime, etime) values (%s,%s,%s,%s)"
         elif flag == "master":
-            pass
+            sql_args = [args.get("msg_uuid"), args.get(
+                 "server"), args.get("client"), args.get("msg_data")]
+            sql = "insert into FileService.master (msg_uuid, server, client, etmsg_dataime) values (%s,%s,%s,%s)"
+        logging.info("msg_uuid [%s] start insert into [%s] sql is [%s] sql_args [%s]", args.get("msg_uuid"), flag, sql, sql_args)
+        ret = await self.db.insert(sql, sql_args)
+        if not ret:
+            logging.error("msg_uuid [%s] insert db [%s] fail" % (
+                args.get("msg_uuid"), flag))
+            return False
+        logging.info("msg_uuid [%s] insert db success")
         return True
+
+    async def push_data(self, data, flag):
+        msg_uuid = data.get("msg_uuid", None)
+        logging.info("msg_uuid [%s] flag [%s] start push to server [%s]" %(msg_uuid, flag, self.push_url))
+        start_time = time.time()
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(self.push_url, data=data, timeout=3) as resp:
+                    text = await resp.json()
+                    end_time = time.time()
+                    logging.info(
+                        "msg_uuid [%s] flag [%s] push data to url [%s] response data [%s]" % (msg_uuid, flag, self.push_url, text))
+                    if text.get("code") != 200:
+                        logging.error("msg_uuid [%s] push  data to url [%s] response error" %(msg_uuid, self.push_url))
+                        return False
+                    return True
+        except asyncio.TimeoutError:
+            exc = traceback.format_exc()
+            logging.error("msg_uuid [%s] push data to url [%s] timeout" %(msg_uuid, self.push_url))
+            return False
+        except Exception as e:
+            exc = traceback.format_exc()
+            logging.info(exc)
+            return False
+
 
     async def get_master_file_content(self, file_name):
         try:
