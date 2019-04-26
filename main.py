@@ -2,7 +2,7 @@ import sys
 import logging
 from cloghandler import ConcurrentRotatingFileHandler
 from config.settings import log_config
-from server.controller import Manager
+from server.controller import Controller
 
 
 def daemon():
@@ -57,7 +57,7 @@ def main():
     pid = daemon()
     if pid:
         return pid
-    Manager().start()
+    Controller().start()
 
 
 if __name__ == "__main__":
