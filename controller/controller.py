@@ -33,6 +33,7 @@ class Controller(object):
                     logging.warning("file path [%s] is empty" %file_path)
                     continue
                 files =self.load_filename(file_path)
+                logging.info("now the path have %s files" % len(files))
                 for file in files:
                     src_file = os.path.join(file_path, file)
                     dst_file = os.path.join(temp_file_path, file)
@@ -43,7 +44,8 @@ class Controller(object):
                         process_queue = self.get_process_queue()
                         process_queue.put(dst_file)
                     else:
-                        logging.error("move file error")                    
+                        logging.error("move file error")
+                time.sleep(1)                    
             except Exception as e:
                 exc = traceback.format_exc()
                 logging.error("error %s" %exc)

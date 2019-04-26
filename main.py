@@ -2,7 +2,7 @@ import sys
 import logging
 from cloghandler import ConcurrentRotatingFileHandler
 from config.settings import log_config
-from server.controller import Controller
+from controller.controller import Controller
 
 
 def daemon():
