@@ -8,6 +8,7 @@ import threading
 
 from database.database import DataBase
 from config.settings import db_config
+from modules.fileread import FileRead
 
 
 class HandlerCenter(object):
@@ -22,13 +23,14 @@ class HandlerCenter(object):
         try:
             while True:
                 message = self.master_queue.get()
-
+                asyncio.run_coroutine_threadsafe(self.handle_message(message), loop=self.loop)
         except Exception as e:
             exec = traceback.format_exc()
             logging.error(exec)
 
     async def handle_message(self, message):
-        pass
+        file_read = FileRead(self.loop, self.db)
+        await file_read.execute(message)
 
     async def app_factory(self):
         pool = await aiomysql.create_pool(host=db_config["host"], port=int(db_config["port"]), user=db_config["user"], password=db_config["password"], db=db_config["db"], minsize=int(db_config["minsize"]), maxsize=int(db_config["maxsize"]), loop=self.loop, autocommit=True, pool_recycle=1)

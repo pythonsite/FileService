@@ -10,6 +10,7 @@ from multiprocessing import Queue
 
 from config.settings import master_file_path
 from config.settings import temp_file_path
+from modules.entrance import HandlerCenter
 
 
 SUBPROCESS_THRESHOLD = max(1, cpu_count())
@@ -39,10 +40,23 @@ class Controller(object):
                         continue
                     self.move_file(src_file, dst_file)
                     if os.path.exists(dst_file):
-                        pass
+                        process_queue = self.get_process_queue()
+                        process_queue.put(dst_file)
+                    else:
+                        logging.error("move file error")                    
             except Exception as e:
-                pass
-
+                exc = traceback.format_exc()
+                logging.error("error %s" %exc)
+    
+    def get_process_queue(self):
+        logging.info("start choice process queue")
+        if self.count % len(self.queues) == 0:
+            process_queue = self.queues[self.count - 1]
+            self.count = 1
+        else:
+            process_queue = self.queues[self.count -1]
+            self.count += 1
+        return process_queue
     
     def load_filename(self, file_path):
         dir_list = os.listdir(file_path)
@@ -56,5 +70,14 @@ class Controller(object):
             return os.system(command)
         except Exception as e:
             logging.error(e)
+
+    def start(self):
+        logging.info("start file service")
+        self.queues = [Queue() for i in range(SUBPROCESS_THRESHOLD)]
+        for queue in self.queues:
+            ps = Process(target=HandlerCenter.run, args=(queue,))
+            ps.start()
+        self.scan_file(master_file_path)
+    
 
     
