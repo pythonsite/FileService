@@ -1,7 +1,7 @@
 import sys
 import logging
 from cloghandler import ConcurrentRotatingFileHandler
-from config.settings import LOG_CONFIG
+from config.settings import log_config
 from server.controller import Manager
 
 
@@ -42,7 +42,7 @@ def daemon():
 
 def setlog():
     rotateHandler = ConcurrentRotatingFileHandler(
-        LOG_CONFIG['filepath'], "a", 20 * 1024 * 1024, 100)
+        log_config['filepath'], "a", 20 * 1024 * 1024, 100)
     rotateHandler.setLevel(logging.INFO)
     formatter = logging.Formatter(
         '[%(asctime)s] [process:%(process)s] [%(filename)s:%(lineno)d]  %(levelname)s %(message)s')
