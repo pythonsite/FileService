@@ -12,7 +12,7 @@ import datetime
 from aiofiles import os as aio_os
 
 from config.settings import detail_file_path
-from config.settings import push_url
+
 
 
 class FileRead(object):
@@ -26,6 +26,7 @@ class FileRead(object):
 
     async def execute(self, file_name):
         try:
+            logging.info(123123123123)
             logging.info("start handle master file [%s]", file_name)
             self.flag, first_detail_name, second_detail_name = await self.get_master_file_content(file_name)
             if not self.flag:
@@ -58,9 +59,10 @@ class FileRead(object):
         if data:
             msg_uuid = data.get("msg_uuid")
             insert_db_ret = await self.insert_db(data, tag)
-            if tag == "master":
+            push_ret = None
+            if tag == "master" and self.push_url:
                 push_ret = await self.push_data(data,  tag)
-            if push_ret and insert_db_ret:
+            if insert_db_ret:
                 logging.info("msg_uuid [%s] flag [%s] file name [%s] insert db and push to url success" % (
                     msg_uuid, tag, file_name))
             else:
@@ -78,13 +80,15 @@ class FileRead(object):
                     return False
                 _content = await f.read()
                 content = json.loads(_content)
+                logging.info(content)
                 detail_content = {
                     "file_name": file_name,
                     "msg_uuid": content.get("msg_uuid"),
                     "mem_id": content.get("mem_id"),
-                    "start_time": content.get("stime"),
-                    "end_time": content.get("end_time")
+                    "stime": content.get("stime"),
+                    "etime": content.get("etime")
                 }
+                logging.info(detail_content)
                 return True, detail_content
         except Exception as e:
             await self.remove_file(file_name, "detail")
@@ -119,11 +123,11 @@ class FileRead(object):
         sql_args = None
         if flag == 'first'or flag == 'second':
             sql_args = [args.get("msg_uuid"), args.get(
-                "mem_id"), args.get("start_time"), args.get("end_time")]
-            sql = "insert into FileService.detail (msg_uuid, memid, stime, etime) values (%s,%s,%s,%s)"
+                "mem_id"), args.get("stime"), args.get("etime")]
+            sql = "insert into FileService.detail (msg_uuid, mem_id, stime, etime) values (%s,%s,%s,%s)"
         elif flag == "master":
             sql_args = [args.get("msg_uuid"), args.get(
-                "server"), args.get("client"), args.get("msg_data")]
+                "server"), args.get("msg_data")]
             sql = "insert into FileService.master (msg_uuid, server,msg_data) values (%s,%s,%s)"
         logging.info("msg_uuid [%s] start insert into [%s] sql is [%s] sql_args [%s]", args.get(
             "msg_uuid"), flag, sql, sql_args)

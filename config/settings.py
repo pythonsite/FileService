@@ -1,8 +1,8 @@
 # db config
 db_config = {
-    "host": "127.0.0.1",
+    "host": "172.16.189.14",
     "port": 3306,
-    "db": "record",
+    "db": "FileService",
     "user": "root",
     "password": "123456",
     "charset": 'utf8',
@@ -11,23 +11,23 @@ db_config = {
 }
 
 # master file path
-master_file_path = "/app/master"
+master_file_path = "/Users/zhaofan/vs_python/master/"
 
 # temp file path
-temp_file_path = "/tmp/FileService"
+temp_file_path = "/tmp/FileService/"
 
 # detail file path
-detail_file_path = "/app/detail"
+detail_file_path = "/Users/zhaofan/vs_python/detail/"
 
 # log config
 log_config = {
-    "file_path": "/app/log/file_service.log",
+    "file_path": "/Users/zhaofan/vs_python/log/file_service.log",
     "size": 10,
-    "backup": 50
+    "backup": 5
 }
 
 # push url
-push_url = "http://127.0.0.1:8080/push"
+push_url = ""
 
 
 

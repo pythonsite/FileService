@@ -17,7 +17,7 @@ def daemon():
                       (error.errno, error.strerror))
         return -1
     # it separates the son from the father
-    os.chdir('/opt/pbx')
+    # os.chdir('/opt/pbx')
     os.setsid()
     os.umask(0)
     # create - fork 2
@@ -42,7 +42,7 @@ def daemon():
 
 def setlog():
     rotateHandler = ConcurrentRotatingFileHandler(
-        log_config['filepath'], "a", 20 * 1024 * 1024, 100)
+        log_config['file_path'], "a", 20 * 1024 * 1024, 100)
     rotateHandler.setLevel(logging.INFO)
     formatter = logging.Formatter(
         '[%(asctime)s] [process:%(process)s] [%(filename)s:%(lineno)d]  %(levelname)s %(message)s')
@@ -54,9 +54,9 @@ def setlog():
 
 def main():
     setlog()
-    pid = daemon()
-    if pid:
-        return pid
+    # pid = daemon()
+    # if pid:
+    #     return pid
     Controller().start()
 
 

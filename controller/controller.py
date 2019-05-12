@@ -45,7 +45,7 @@ class Controller(object):
                         process_queue.put(dst_file)
                     else:
                         logging.error("move file error")
-                time.sleep(1)                    
+                time.sleep(0.1)                    
             except Exception as e:
                 exc = traceback.format_exc()
                 logging.error("error %s" %exc)
@@ -64,7 +64,7 @@ class Controller(object):
         dir_list = os.listdir(file_path)
         if not dir_list:
             return list()
-        return dir_list
+        return dir_list[:500]
 
     def move_file(self, src_file, dst_file):
         try:
