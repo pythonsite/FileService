@@ -42,7 +42,7 @@ class FileRead(object):
 
             if second_detail_name:
                 self.flag3, self.second_detail_content = await self.get_detail_file_content(second_detail_name)
-                if self.flag3:
+                if not self.flag3:
                     self.second_detail_content = {}
             else:
                 self.second_detail_content = {}
@@ -58,7 +58,8 @@ class FileRead(object):
         if data:
             msg_uuid = data.get("msg_uuid")
             insert_db_ret = await self.insert_db(data, tag)
-            push_ret = await self.push_data(data,  tag)
+            if tag == "master":
+                push_ret = await self.push_data(data,  tag)
             if push_ret and insert_db_ret:
                 logging.info("msg_uuid [%s] flag [%s] file name [%s] insert db and push to url success" % (
                     msg_uuid, tag, file_name))
@@ -103,10 +104,10 @@ class FileRead(object):
         del self.master_data['file_name']
         self.first_data = data[1]
         if first_detail_name:
-                del self.first_data['filename']
+                del self.first_data['file_name']
         self.second_data = data[2]
         if second_detail_name:
-            del self.second_data['filename']
+            del self.second_data['file_name']
         if not self.master_data:
             logging.error("master file get data None")
         else:
@@ -123,7 +124,7 @@ class FileRead(object):
         elif flag == "master":
             sql_args = [args.get("msg_uuid"), args.get(
                 "server"), args.get("client"), args.get("msg_data")]
-            sql = "insert into FileService.master (msg_uuid, server, client, etmsg_dataime) values (%s,%s,%s,%s)"
+            sql = "insert into FileService.master (msg_uuid, server,msg_data) values (%s,%s,%s)"
         logging.info("msg_uuid [%s] start insert into [%s] sql is [%s] sql_args [%s]", args.get(
             "msg_uuid"), flag, sql, sql_args)
         ret = await self.db.insert(sql, sql_args)
@@ -182,7 +183,6 @@ class FileRead(object):
                     "file_name": file_name,
                     "msg_uuid": master_data.get("msg_uuid"),
                     "server": master_data.get("server"),
-                    "client": master_data.get("client"),
                     "msg_data": master_data.get("msg_data")
                 }
                 return True, self.first_name, self.second_name
