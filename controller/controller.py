@@ -13,7 +13,7 @@ from config.settings import temp_file_path
 from modules.entrance import HandlerCenter
 
 
-SUBPROCESS_THRESHOLD = max(1, cpu_count())
+SUBPROCESS_THRESHOLD = max(1, cpu_count()) - 2
 
 
 class Controller(object):

@@ -17,7 +17,7 @@ master_file_path = "/Users/zhaofan/vs_python/master/"
 temp_file_path = "/tmp/FileService/"
 
 # detail file path
-detail_file_path = "/Users/zhaofan/vs_python/detail/"
+detail_file_path = "/Users/zhaofan/vs_python/detail"
 
 # log config
 log_config = {

@@ -26,7 +26,6 @@ class FileRead(object):
 
     async def execute(self, file_name):
         try:
-            logging.info(123123123123)
             logging.info("start handle master file [%s]", file_name)
             self.flag, first_detail_name, second_detail_name = await self.get_master_file_content(file_name)
             if not self.flag:
