@@ -66,11 +66,11 @@ class Controller(object):
         for queue in self.queues:
             ps = Process(target=HandlerCenter.run, args=(queue,))
             ps.start()
+        # 启动watchdog
         observer = Observer()
         observer.schedule(self.event_handler, master_file_path, recursive=True)
         observer.start()
         observer.join()
-        # self.scan_file(master_file_path)
     
 
     

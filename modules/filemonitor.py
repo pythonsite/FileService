@@ -10,14 +10,17 @@ class FileMonitor(FileSystemEventHandler):
     def on_moved(self, event):
         super(FileMonitor, self).on_moved(event)
         what = 'directory' if event.is_directory else 'file'
+        # 后面用到可以添加对应的回调
 
     def on_deleted(self, event):
         super(FileMonitor, self).on_deleted(event)
         what = 'directory' if event.is_directory else 'file'
+        # 后面用到可以添加对应的回调
 
     def on_modified(self, event):
         super(FileMonitor, self).on_modified(event)
         what = 'directory' if event.is_directory else 'file'
+        # 后面用到可以添加对应的回调
         
     def on_created(self, event):
         super(FileMonitor, self).on_moved(event)
