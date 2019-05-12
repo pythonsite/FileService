@@ -1,6 +1,6 @@
 # db config
 db_config = {
-    "host": "172.16.189.14",
+    "host": "192.168.0.104",
     "port": 3306,
     "db": "FileService",
     "user": "root",
