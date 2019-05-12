@@ -23,37 +23,9 @@ class Controller(object):
     def __init__(self):
         self.queues = ""
         self.count = 1
-        self.event_handler = FileMonitor(self.scan_file2)
-
-    def scan_file(self, file_path):
-
-        if not os.path.exists(temp_file_path):
-            os.makedirs(temp_file_path)
-        
-        while True:
-            try:
-                if not file_path:
-                    logging.warning("file path [%s] is empty" %file_path)
-                    continue
-                files =self.load_filename(file_path)
-                logging.info("now the path have %s files" % len(files))
-                for file in files:
-                    src_file = os.path.join(file_path, file)
-                    dst_file = os.path.join(temp_file_path, file)
-                    if os.path.exists(dst_file):
-                        continue
-                    self.move_file(src_file, dst_file)
-                    if os.path.exists(dst_file):
-                        process_queue = self.get_process_queue()
-                        process_queue.put(dst_file)
-                    else:
-                        logging.error("move file error")
-                time.sleep(0.1)                    
-            except Exception as e:
-                exc = traceback.format_exc()
-                logging.error("error %s" %exc)
+        self.event_handler = FileMonitor(self.scan_file)
     
-    def scan_file2(self, new_create_file):
+    def scan_file(self, new_create_file):
         try:
             logging.info("new create file [%s]" %new_create_file)
             file = new_create_file.split("/")[-1]
