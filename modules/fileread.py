@@ -135,7 +135,7 @@ class FileRead(object):
             logging.error("msg_uuid [%s] insert db [%s] fail" % (
                 args.get("msg_uuid"), flag))
             return False
-        logging.info("msg_uuid [%s] insert db success")
+        logging.info("msg_uuid [%s] insert db success" %(args.get("msg_uuid")))
         return True
 
     async def push_data(self, data, flag):

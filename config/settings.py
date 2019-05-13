@@ -1,6 +1,6 @@
 # db config
 db_config = {
-    "host": "192.168.0.104",
+    "host": "127.0.0.1",
     "port": 3306,
     "db": "FileService",
     "user": "root",
@@ -11,17 +11,17 @@ db_config = {
 }
 
 # master file path
-master_file_path = "/Users/zhaofan/vs_python/master/"
+master_file_path = "/app/python_project/master/"
 
 # temp file path
 temp_file_path = "/tmp/FileService/"
 
 # detail file path
-detail_file_path = "/Users/zhaofan/vs_python/detail"
+detail_file_path = "/app/python_project/detail"
 
 # log config
 log_config = {
-    "file_path": "/Users/zhaofan/vs_python/log/file_service.log",
+    "file_path": "/app/python_project/log/file_service.log",
     "size": 10,
     "backup": 5
 }

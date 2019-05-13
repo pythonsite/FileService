@@ -5,6 +5,11 @@ import datetime
 import uuid
 import shutil
 
+
+master_path = "/app/python_project/master/"
+detail_path = "/app/python_project/detail/"
+
+
 start = time.time()
 for i in range(1):
     master_file_name = str(uuid.uuid1())
@@ -21,7 +26,7 @@ for i in range(1):
         "secondid": secondid,
         "msg_data": "hello world"
     }
-    with open("/Users/zhaofan/vs_python/master/" + master_file_name + '.master', 'w') as f:
+    with open(master_path + master_file_name + '.master', 'w') as f:
         f.write(json.dumps(master_data))
     start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -31,7 +36,7 @@ for i in range(1):
         "stime": start_time,
         "etime": end_time,
     }
-    with open("/Users/zhaofan/vs_python/detail/" + firstid + ".json", "w") as f:
+    with open(detail_path + firstid + ".json", "w") as f:
         f.write(json.dumps(cdr_first_data))
     cdr_second_data = {
         "msg_uuid": msg_uuid,
@@ -39,7 +44,7 @@ for i in range(1):
         "stime": start_time,
         "etime": end_time,
     }
-    with open("/Users/zhaofan/vs_python/detail/" + secondid + ".json","w") as f:
+    with open(detail_path + secondid + ".json","w") as f:
         f.write(json.dumps(cdr_second_data))
     time.sleep(0.002)
 
